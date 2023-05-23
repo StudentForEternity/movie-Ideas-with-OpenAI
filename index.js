@@ -1,42 +1,29 @@
+import { process } from "/env"
+import { Configuration, OpenAIApi } from "openai"
+
 const setupTextarea = document.getElementById("setup-textarea")
 const setupInputContainer = document.getElementById("setup-input-container")
 const movieBossText = document.getElementById("movie-boss-text")
 
-const apiKey = "blah blab blab"
+const configuration = new Configuration({
+  apiKey: process.env.OPENAI_API_KEY,
+})
 
-const url = "https://api.openai.com/v1/completions"
+const openai = new OpenAIApi(configuration)
 
 document.getElementById("send-btn").addEventListener("click", () => {
   if (setupTextarea.value) {
+    const userPrompt = setupTextarea.value
     setupInputContainer.innerHTML = `<img src="images/loading.svg" class="loading" id="loading">`
     movieBossText.innerText = `Ok, just wait a second while my digital brain digests that...`
+    fetchBotReply(userPrompt)
   }
-
-  fetchBotReply()
 })
 
-function fetchBotReply() {
-  fetch(url, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${apiKey}`,
-    },
-    body: JSON.stringify({
-      model: "text-davinci-003",
-      prompt: "Do you think the world will end?",
-    }),
+async function fetchBotReply(userPrompt) {
+  const response = await openai.createCompletion({
+    model: "text-davinci-003",
+    prompt: `${userPrompt}`,
   })
-    .then((res) => {
-      if (!res.ok) {
-        throw {
-          Error: "sorry buddy, something went wrong",
-        }
-      }
-      return res.json()
-    })
-    .then((data) => {
-      movieBossText.innerHTML = `${data.choices[0].text}`
-    })
-    .catch((err) => console.log(err))
+  movieBossText.innerText = response.data.choices[0].text.trim()
 }
