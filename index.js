@@ -61,7 +61,20 @@ async function fetchSynopsis(userPrompt) {
     Movie synopsis: `,
     max_tokens: 700,
   })
-  console.log(response)
-  document.getElementById("output-text").innerText =
+
+  const synopsis = response.data.choices[0].text.trim()
+  document.getElementById("output-text").innerText = synopsis
+
+  fetchTitle(synopsis)
+}
+
+async function fetchTitle(synopsis) {
+  const response = await openai.createCompletion({
+    model: "text-davinci-003",
+    prompt: `Generate a gripping, flashy, and marketable movie title based on the ${synopsis}`,
+    max_tokens: 20,
+    temperature: 0.5,
+  })
+  document.getElementById("output-title").innerText =
     response.data.choices[0].text.trim()
 }
